@@ -27,6 +27,7 @@ draft-goal-prompt/SKILL.md
 
 - The final `/goal` body should match the user's language. If the user asks in Korean, draft the goal in Korean.
 - Nontrivial or high-impact goals include a `Goal Review` before the ready-to-paste `/goal`.
+- Responses end with one `Current Goal Summary:` line that summarizes the final `Current Goal`.
 - Long-running `Mission` prompts ask Codex to produce `Next Goal candidates`, a `Recommended Next Goal`, and a complete `Ready-to-paste next /goal`.
 - The 5-minute unattended-continuation rule is only for safe, in-scope continuation when the user wants unattended progress.
 - Silence is never approval for destructive actions, file deletion or moves, installs, downloads, hardware actuation, secret/private data handling, or scope expansion.

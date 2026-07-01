@@ -28,9 +28,10 @@ Optimize for a goal another Codex session can inspect, pursue, verify, pause, re
 6. Draft a compact goal contract using the section set below. Match the user's language for the ready-to-paste `/goal` body, while keeping stable section labels, file paths, commands, code identifiers, and official terms in English when clearer.
 7. For nontrivial or high-impact goals, include an inline `Goal Review` block before the ready-to-paste `/goal` so the user can inspect the goal's intent, exclusions, completion test, approval boundary, and Mission fit before using it.
 8. For long-running `Mission` prompts, require the executing Codex session to output `Next Goal candidates`, `Recommended Next Goal`, and a complete `Ready-to-paste next /goal` for the recommendation. Do not make the next `/goal` a lower-quality compact summary.
-9. If the user wants unattended progress, include a 5-minute continuation rule that applies only to safe in-scope work and never treats silence as approval for high-risk actions.
-10. Keep the final `/goal` practical to paste, but do not reduce the goal contract quality just to save length. Put bulky background in an inline `Detailed Handoff` block, or ask the user before creating/updating a handoff file.
-11. Do not create goal draft files by default. Do not execute the drafted goal, install skills, edit AGENTS files, or change automation unless the user explicitly asks for that as the current task.
+9. End the skill response with exactly one final line: `Current Goal Summary: <one-sentence summary of the Current Goal in the user's language>`.
+10. If the user wants unattended progress, include a 5-minute continuation rule that applies only to safe in-scope work and never treats silence as approval for high-risk actions.
+11. Keep the final `/goal` practical to paste, but do not reduce the goal contract quality just to save length. Put bulky background in an inline `Detailed Handoff` block, or ask the user before creating/updating a handoff file.
+12. Do not create goal draft files by default. Do not execute the drafted goal, install skills, edit AGENTS files, or change automation unless the user explicitly asks for that as the current task.
 
 ## User Defaults
 
@@ -91,6 +92,14 @@ Goal Review:
 
 Then provide the final ready-to-paste `/goal`.
 
+Always end the whole response with one standalone line, outside the ready-to-paste `/goal` block:
+
+```text
+Current Goal Summary: <one-sentence summary of the Current Goal in the user's language>
+```
+
+The summary must describe only the `Current Goal`, not the whole `Mission`, and it must not introduce new scope.
+
 For long-running `Mission` work, make next-goal expansion part of the goal's expected deliverables:
 
 - Include `Next Goal candidates` with 1-3 bounded candidates.
@@ -148,6 +157,7 @@ Before returning the prompt, check:
 - The ready-to-paste `/goal` text matches the user's language; English remains only for stable labels, paths, commands, identifiers, or terms that are clearer untranslated.
 - The prompt avoids vague verbs such as "improve", "clean up", "continue", "everything", or "all" unless paired with a bounded list and verification.
 - The final `/goal` is practical to paste without sacrificing contract quality. Do not create files by default; use inline `Detailed Handoff` for bulky background or ask the user before writing a file.
+- The whole response ends with exactly one `Current Goal Summary:` line that summarizes the final `Current Goal` without adding new scope.
 
 If the task is still unclear after this check, generate a short interview prompt instead of pretending the `/goal` is ready.
 
