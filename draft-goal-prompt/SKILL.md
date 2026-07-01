@@ -1,6 +1,6 @@
 ---
 name: draft-goal-prompt
-description: "Draft concise, ready-to-paste Codex /goal prompts for Lee as a goal prompt harness with Mission, Current Goal, and next-goal handoff framing. Use when Lee asks for a goal prompt, next-session prompt, objective prompt, Mission/Current Goal framing, or phrases such as \"goal 프롬프트 만들어줘\", \"다음 세션 goal 써줘\", \"목표 프롬프트 작성해줘\", or when Lee wants a vague task turned into an audit-friendly Codex goal."
+description: "Draft concise, ready-to-paste Codex /goal prompts for Lee as a goal prompt harness with Mission, Current Goal, Goal Review, and full next-goal handoff framing. Use when Lee asks for a goal prompt, next-session prompt, objective prompt, Mission/Current Goal framing, or phrases such as \"goal 프롬프트 만들어줘\", \"다음 세션 goal 써줘\", \"목표 프롬프트 작성해줘\", or when Lee wants a vague task turned into an audit-friendly Codex goal."
 ---
 
 # draft-goal-prompt
@@ -26,10 +26,11 @@ Optimize for a goal another Codex session can inspect, pursue, verify, pause, re
 4. Prefer conservative assumptions when missing details are low-risk. State those assumptions inside the goal prompt.
 5. Never fabricate paths, tool names, repo state, or previous decisions. Use a TODO placeholder or ask Lee when exact context is needed.
 6. Draft a compact goal contract using the section set below. Write the ready-to-paste `/goal` text in Korean by default for Lee, while keeping stable section labels, file paths, commands, code identifiers, and official terms in English when clearer.
-7. For long-running `Mission` prompts, include a `Done when` item that asks Codex to propose 1-3 next `Current Goal` candidates and mark one as recommended.
-8. If Lee wants unattended progress, include a 5-minute continuation rule that applies only to safe in-scope work and never treats silence as approval for high-risk actions.
-9. Keep the final `/goal` under Codex's practical goal length when possible. If the instructions are too long, tell Lee to store the detailed plan in a file and set the goal to inspect that file first.
-10. Do not execute the drafted goal, install skills, edit AGENTS files, or change automation unless Lee explicitly asks for that as the current task.
+7. For nontrivial or high-impact goals, include an inline `Goal Review` block before the ready-to-paste `/goal` so Lee can inspect the goal's intent, exclusions, completion test, approval boundary, and Mission fit before using it.
+8. For long-running `Mission` prompts, require the executing Codex session to output `Next Goal candidates`, `Recommended Next Goal`, and a complete `Ready-to-paste next /goal` for the recommendation. Do not make the next `/goal` a lower-quality compact summary.
+9. If Lee wants unattended progress, include a 5-minute continuation rule that applies only to safe in-scope work and never treats silence as approval for high-risk actions.
+10. Keep the final `/goal` practical to paste, but do not reduce the goal contract quality just to save length. Put bulky background in an inline `Detailed Handoff` block, or ask Lee before creating/updating a handoff file.
+11. Do not create goal draft files by default. Do not execute the drafted goal, install skills, edit AGENTS files, or change automation unless Lee explicitly asks for that as the current task.
 
 ## Lee Defaults
 
@@ -75,6 +76,30 @@ Handoff:
 <optional; how a later Codex session should resume if interrupted, and for long Missions how Lee should choose/approve the next Current Goal>
 ```
 
+## Output Shape
+
+For nontrivial or high-impact requests, return a review block before the final prompt:
+
+```text
+Goal Review:
+- What this goal will do: <short Korean summary>
+- What this goal will not do: <clear exclusions>
+- Completion check: <how Lee/Codex can tell it is done>
+- Main stop/approval boundary: <the most important approval gate>
+- Mission fit: <why this Current Goal moves the Mission forward, or "N/A" for short tasks>
+```
+
+Then provide the final ready-to-paste `/goal`.
+
+For long-running `Mission` work, make next-goal expansion part of the goal's expected deliverables:
+
+- Include `Next Goal candidates` with 1-3 bounded candidates.
+- Mark one `Recommended Next Goal`.
+- Expand the recommendation into a complete, high-quality `Ready-to-paste next /goal`.
+- Do not create files by default.
+- Do not lower the next goal contract quality to reduce length.
+- If bulky context makes the answer too long, use an inline `Detailed Handoff` block or ask Lee before creating/updating a file.
+
 ## Section Guidance
 
 - `Mission`: use for large efforts such as Robot Wiki, TARS, or long learning programs. It supplies direction but must not be the finish line.
@@ -101,9 +126,11 @@ Use this rule only when Lee asks for unattended progress or when a long-running 
 
 When the prompt includes `Mission`, make continuation explicit without turning the goal into an endless task.
 
-- Add a `Done when` item: "If the Mission remains unfinished, propose 1-3 concrete next Current Goal candidates, mark one as recommended, and explain why it is next."
+- Add a `Done when` item: "If the Mission remains unfinished, include `Next Goal candidates` with 1-3 concrete candidates, `Recommended Next Goal`, and a complete `Ready-to-paste next /goal` for the recommendation."
 - Add a `Handoff` rule: "A later session should use only the Lee-approved candidate as the next Current Goal."
 - Keep next-goal candidates bounded and verifiable. Each candidate should be small enough to become one future `/goal`.
+- Do not compact the recommended next `/goal` so much that it loses Objective, context, scope, constraints, done condition, stop boundary, verification, or handoff quality.
+- Prefer inline `Detailed Handoff` for bulky context. Ask Lee before creating a separate handoff file.
 - Do not let Codex automatically continue into the recommended next goal unless Lee explicitly asks for that behavior.
 
 ## Audit-Friendliness Check
@@ -113,13 +140,14 @@ Before returning the prompt, check:
 - The final prompt distinguishes long-term `Mission` from `Current Goal` when the task is part of a larger project.
 - `Current Goal` has one bounded target state.
 - `Done when` can be mapped to evidence, checklist items, files, commands, screenshots, or readback.
-- Long-running `Mission` prompts include a next-goal handoff instead of leaving Lee to invent the next step from scratch.
+- Nontrivial or high-impact prompts include a `Goal Review` block before the ready-to-paste `/goal`.
+- Long-running `Mission` prompts include `Next Goal candidates`, `Recommended Next Goal`, and a complete `Ready-to-paste next /goal` requirement instead of leaving Lee to invent the next step from scratch.
 - If unattended progress is requested, the 5-minute rule is present and explicitly excludes high-risk approvals.
 - `Stop if` is mechanically detectable; it is not just "if confused".
 - Local files use absolute paths when known.
 - The ready-to-paste `/goal` text is Korean-facing by default; English remains only for stable labels, paths, commands, identifiers, or terms that are clearer untranslated.
 - The prompt avoids vague verbs such as "improve", "clean up", "continue", "everything", or "all" unless paired with a bounded list and verification.
-- The final `/goal` is concise enough to paste. Put large background context in a file and tell Codex to inspect it first.
+- The final `/goal` is practical to paste without sacrificing contract quality. Do not create files by default; use inline `Detailed Handoff` for bulky background or ask Lee before writing a file.
 
 If the task is still unclear after this check, generate a short interview prompt instead of pretending the `/goal` is ready.
 
@@ -156,7 +184,7 @@ Done when:
 - 다음 확장 목표 하나가 선택되어 있고 선택 이유가 현재 Robot Wiki 구조와 연결되어 있다.
 - 만들거나 갱신할 노트 후보 경로와 각 노트의 역할이 적혀 있다.
 - 링크/검증 방법이 구체적으로 적혀 있다.
-- Mission이 아직 남아 있으므로 다음 세션에서 사용할 수 있는 Next Goal 후보 1-3개와 추천 후보 1개가 포함되어 있다.
+- Mission이 아직 남아 있으므로 `Next Goal candidates` 1-3개, `Recommended Next Goal` 1개, 추천 후보에 대한 `Goal Review`, 완성된 `Ready-to-paste next /goal`이 포함되어 있다.
 
 Stop if:
 - Robot Wiki index나 라우팅 파일을 읽을 수 없다.
@@ -164,7 +192,7 @@ Stop if:
 - 계획을 넘어 파일 이동, 삭제, 설치가 필요해진다.
 
 Handoff:
-다음 세션은 이 답변의 추천 Next Goal 후보를 검토하되, Lee가 승인한 후보만 새 `Current Goal`로 실행한다. 중단된 경우에는 위 `First context to inspect` 파일을 먼저 읽고 첫 번째 미완료 `Done when` 항목부터 이어간다.
+다음 세션은 이 답변의 `Ready-to-paste next /goal`을 검토하되, Lee가 승인한 경우에만 새 `Current Goal`로 실행한다. 중단된 경우에는 위 `First context to inspect` 파일을 먼저 읽고 첫 번째 미완료 `Done when` 항목부터 이어간다.
 ```
 
 ### Eclipse V3 Short Code Goal
@@ -227,12 +255,12 @@ Done when:
 - practice card에 `목적 -> 실행 명령/코드 -> 결과 -> 실패/경고 -> Lee가 실수했을 때 대응법 -> 다음 실습`이 채워져 있다.
 - 실행 결과 또는 실패 로그가 구체적으로 기록되어 있다.
 - 생성/수정한 note path와 검증 결과가 최종 답변에 포함되어 있다.
-- Mission이 아직 남아 있으므로 다음 작은 실습 Next Goal 후보 1-3개와 추천 후보 1개가 포함되어 있다.
+- Mission이 아직 남아 있으므로 다음 작은 실습 `Next Goal candidates` 1-3개, `Recommended Next Goal` 1개, 추천 후보에 대한 `Goal Review`, 완성된 `Ready-to-paste next /goal`이 포함되어 있다.
 
 Stop if:
 - Isaac/RoboLab 실행, hardware actuation, large download, secret/private log 저장이 필요해진다.
 - 실습 환경이 없어 결과를 검증할 수 없고 추정으로만 써야 한다.
 
 Handoff:
-중단되면 practice card path와 마지막 command output을 먼저 읽고, 비어 있는 practice card section부터 이어간다. 완료된 뒤에는 Lee가 승인한 추천 Next Goal 후보만 새 `Current Goal`로 실행한다.
+중단되면 practice card path와 마지막 command output을 먼저 읽고, 비어 있는 practice card section부터 이어간다. 완료된 뒤에는 Lee가 승인한 `Ready-to-paste next /goal`만 새 `Current Goal`로 실행한다.
 ```
